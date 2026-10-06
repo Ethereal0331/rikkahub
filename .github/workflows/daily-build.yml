@@ -4,8 +4,12 @@ on:
   # 每天 UTC 09:00、18:00 触发（北京时间 17:00、次日 02:00）
   schedule:
     - cron: '0 9,18 * * *'
-  # 也支持手动触发
+  # 手动触发
   workflow_dispatch:
+  # 当本 workflow 文件被修改并 push 时立即触发构建
+  push:
+    paths:
+      - '.github/workflows/daily-build.yml'   # 改成你实际的工作流文件名
 
 jobs:
   # 检查过去 24 小时内是否有新提交，没有则跳过构建，避免重复打包
@@ -18,8 +22,8 @@ jobs:
       - name: Check for recent commits
         id: check
         run: |
-          # 手动触发时无条件构建
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          # 手动触发或 push 触发时无条件构建
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "push" ]; then
             echo "should_build=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
